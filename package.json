@@ -1,0 +1,19 @@
+{
+  "name": "cheburek",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "register-commands": "bun commands.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^4.2.0",
+    "discord.js": "^14.26.3"
+  }
+}
