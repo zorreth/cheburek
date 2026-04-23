@@ -4,7 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "register-commands": "bun commands.ts"
+    "register-commands": "bun commands.ts",
+    "start": "bun index.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"
