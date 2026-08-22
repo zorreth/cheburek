@@ -2,7 +2,7 @@ services:
   bot:
     build: .
     volumes:
-      - db:/usr/src/app/data
+      - db:/app/data
     env_file:
       - .env
 
