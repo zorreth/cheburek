@@ -190,7 +190,12 @@ client.on(Events.MessageCreate, async (message) => {
 
     if (reply) {
       const formattedReply = reply.charAt(0).toUpperCase() + reply.slice(1);
-      await message.channel.send(formattedReply);
+
+      try {
+        await message.channel.send(formattedReply);
+      } catch (error: any) {
+        console.error('Failed to send message:', error.message);
+      }
     }
   }
 });
@@ -203,12 +208,20 @@ client.on(Events.InteractionCreate, async (interaction) => {
       const startWord = pickRandomStartWord();
       const generatedText = generateMessage(startWord, 12);
       const formatted = generatedText.charAt(0).toUpperCase() + generatedText.slice(1);
-      await interaction.reply(formatted);
+      try {
+        await interaction.reply(formatted);
+      } catch (error: any) {
+        console.error('Failed to reply interaction:', error.message);
+      }
       break;
 
     case 'stats':
       const statsText = getBotStatistics();
-      await interaction.reply(statsText);
+      try {
+        await interaction.reply(statsText);
+      } catch (error: any) {
+        console.error('Failed to reply interaction:', error.message);
+      }
       break;
   }
 });
