@@ -5,10 +5,6 @@ Cheburek
 
 Funny bot for Discord servers
 
-## Features
-
-1. Random replies with AI-generated messages.
-
 ## Configuration
 
 Rename `.env.example` to `.env` and edit it, then use this command to register slash commands for your bot:
@@ -25,5 +21,5 @@ $ bun run start
 
 ## Credits
 
-- Created by **zorreth** (Discord, Telegram, GitHub).
-- Avatar by **re.alexa** (Discord).
+- Created by **zorreth** (Discord, Telegram, GitHub)
+- Avatar by **re.alexa** (Discord)

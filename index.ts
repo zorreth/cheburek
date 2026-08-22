@@ -1,12 +1,17 @@
-import { pipeline } from '@huggingface/transformers';
+import { Client, Events, GatewayIntentBits } from 'discord.js';
 
-const pipe = await pipeline('text-generation', 'HuggingFaceTB/SmolLM2-135M-Instruct');
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-const messages = [
-  { role: 'system', content: 'You are helpful assistant.' },
-  { role: 'user', content: 'What is the capital of US?' },
-];
+client.on(Events.ClientReady, (readyClient) => {
+  console.log(`Logged in as ${readyClient.user.tag}!`);
+});
 
-// Generate a response
-const output = await pipe(messages, { max_new_tokens: 128 });
-console.log(output[0]?.generated_text.at(-1)?.content);
+client.on(Events.InteractionCreate, async (interaction) => {
+  if (!interaction.isChatInputCommand()) return;
+
+  if (interaction.commandName === 'ping') {
+    await interaction.reply('Pong!');
+  }
+});
+
+client.login(process.env.TOKEN!);
