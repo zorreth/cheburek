@@ -1,4 +1,11 @@
-import { Client, Events, GatewayIntentBits } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  Client,
+  Events,
+  GatewayIntentBits,
+} from 'discord.js';
 import { Database } from 'bun:sqlite';
 import { join } from 'path';
 import { mkdirSync, existsSync } from 'fs';
@@ -30,11 +37,10 @@ db.run(`
 `);
 
 const upsertWord = db.prepare(`
-  INSERT INTO words (word, start_count) 
-  VALUES ($word, $is_start)
+  INSERT INTO words (word) 
+  VALUES ($word)
   ON CONFLICT(word) DO UPDATE SET 
-    usage_count = usage_count + 1,
-    start_count = start_count + $is_start -- Увеличиваем, если это начало
+    usage_count = usage_count + 1
   RETURNING id;
 `);
 
@@ -58,7 +64,6 @@ const checkWordExists = db.prepare(`
 const getRandomStartWord = db.prepare(`
   SELECT word 
   FROM words 
-  WHERE start_count > 0 
   ORDER BY RANDOM() 
   LIMIT 1;
 `);
@@ -80,9 +85,8 @@ export function learnFromText(text: string) {
 
     for (let i = 0; i < words.length; i++) {
       const cleanWord = words[i]!.toLowerCase();
-      const isStart = i === 0 ? 1 : 0;
 
-      const row = upsertWord.get({ $word: cleanWord, $is_start: isStart }) as { id: number };
+      const row = upsertWord.get({ $word: cleanWord }) as { id: number };
       const currentId = row.id;
 
       if (prevId !== null) {
@@ -170,6 +174,12 @@ export function getBotStatistics() {
 - Новых слов за этот месяц: **${stats.added_this_month}**`;
 }
 
+function generateResponse() {
+  const startWord = pickRandomStartWord();
+  const generatedText = generateMessage(startWord, 12);
+  return generatedText.charAt(0).toUpperCase() + generatedText.slice(1);
+}
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -208,28 +218,56 @@ client.on(Events.MessageCreate, async (message) => {
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
+  if (interaction.isChatInputCommand()) {
+    switch (interaction.commandName) {
+      case 'generate':
+        const response = generateResponse();
 
-  switch (interaction.commandName) {
-    case 'generate':
-      const startWord = pickRandomStartWord();
-      const generatedText = generateMessage(startWord, 12);
-      const formatted = generatedText.charAt(0).toUpperCase() + generatedText.slice(1);
-      try {
-        await interaction.reply(formatted);
-      } catch (error: any) {
-        console.error('Failed to reply interaction:', error.message);
-      }
-      break;
+        const repeatButton = new ButtonBuilder()
+          .setCustomId('repeat_button')
+          .setStyle(ButtonStyle.Primary)
+          .setLabel('Перегенерировать')
+          .setEmoji('🔁');
 
-    case 'stats':
-      const statsText = getBotStatistics();
-      try {
-        await interaction.reply(statsText);
-      } catch (error: any) {
-        console.error('Failed to reply interaction:', error.message);
-      }
-      break;
+        const frescoButton = new ButtonBuilder()
+          .setCustomId('fresco_button')
+          .setStyle(ButtonStyle.Secondary)
+          .setLabel('Жак Фреско')
+          .setEmoji('👴');
+
+        const row = new ActionRowBuilder<ButtonBuilder>().addComponents(repeatButton, frescoButton);
+
+        try {
+          await interaction.reply({ content: response, components: [row] });
+        } catch (error: any) {
+          console.error('Failed to reply interaction:', error.message);
+        }
+        break;
+
+      case 'stats':
+        const statsText = getBotStatistics();
+        try {
+          await interaction.reply(statsText);
+        } catch (error: any) {
+          console.error('Failed to reply interaction:', error.message);
+        }
+        break;
+    }
+  } else if (interaction.isButton()) {
+    switch (interaction.customId) {
+      case 'repeat_button':
+        const newResponse = generateResponse();
+
+        try {
+          await interaction.update(newResponse);
+        } catch (error: any) {
+          console.error('Failed to update interaction:', error.message);
+        }
+        break;
+
+      case 'fresco_button':
+        break;
+    }
   }
 });
 
