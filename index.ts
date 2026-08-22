@@ -1,7 +1,14 @@
 import { Client, Events, GatewayIntentBits } from 'discord.js';
 import { Database } from 'bun:sqlite';
+import { join } from 'path';
+import { mkdirSync, existsSync } from 'fs';
 
-const db = new Database(`./data/database.db`, { create: true });
+const DATA_DIR = join(import.meta.dir, 'data');
+if (!existsSync(DATA_DIR)) {
+  mkdirSync(DATA_DIR, { recursive: true });
+}
+
+const db = new Database(`${DATA_DIR}/database.db`, { create: true });
 
 db.run(`
   CREATE TABLE IF NOT EXISTS words (
