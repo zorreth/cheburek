@@ -1,7 +1,7 @@
 import { Client, Events, GatewayIntentBits } from 'discord.js';
 import { Database } from 'bun:sqlite';
 
-const db = new Database('database.db');
+const db = new Database('data/database.db', { create: true });
 
 db.run(`
   CREATE TABLE IF NOT EXISTS words (
