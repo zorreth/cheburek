@@ -3,7 +3,7 @@
 Cheburek
 </h1>
 
-Funny bot for Discord servers
+Semi-random text generation bot for Discord servers. Assembles text based on previous messages.
 
 ## Configuration
 
