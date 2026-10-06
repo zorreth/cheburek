@@ -1,16 +1,22 @@
+import io
 import os
 import random
 import re
+import textwrap
 
 import discord
 from dotenv import load_dotenv
+from PIL import Image, ImageDraw, ImageFont
 
 from markov_chain import MarkovChain
+from meme_generator import MemeGenerator
 
 load_dotenv()
 
 chain = MarkovChain()
 chain.load()
+
+meme = MemeGenerator()
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -60,6 +66,20 @@ async def generate(interaction: discord.Interaction):
     except Exception as e:
         print("Failed to generate message:", e)
         await interaction.response.send_message("Произошла ошибка!", ephemeral=True)
+
+
+@bot.command(description="Сгенерировать мем Жак Фреско")
+async def fresco(interaction: discord.Interaction):
+    message = chain.generate_message(random.randint(2, 8))
+    img = meme.generate_fresco(message)
+
+    with io.BytesIO() as image_binary:
+        img.save(image_binary, "PNG")
+        image_binary.seek(0)
+
+        await interaction.response.send_message(
+            file=discord.File(fp=image_binary, filename="fresco.png")
+        )
 
 
 @bot.command(description="Показать статистику")
