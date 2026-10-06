@@ -58,11 +58,42 @@ async def on_message(ctx: discord.Message):
             print("Failed to send message:", e)
 
 
+class GenerateView(discord.ui.View):
+    @discord.ui.button(label="🔁 Перегенерировать", style=discord.ButtonStyle.primary)
+    async def regenerate(
+        self, button: discord.ui.Button, interaction: discord.Interaction
+    ):
+        await interaction.response.defer()
+
+        message = chain.generate_message(random.randint(2, 12))
+
+        await interaction.edit(content=message, attachments=[], view=self)
+
+    @discord.ui.button(label="👴 Жак Фреско", style=discord.ButtonStyle.secondary)
+    async def fresco(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.defer()
+
+        if not interaction.message:
+            return
+
+        img = meme.generate_fresco(interaction.message.content)
+
+        with io.BytesIO() as image_binary:
+            img.save(image_binary, "PNG")
+            image_binary.seek(0)
+
+            await interaction.response.send_message(
+                content="",
+                file=discord.File(fp=image_binary, filename="fresco.png"),
+                view=self,
+            )
+
+
 @bot.command(description="Сгенерировать сообщение")
 async def generate(interaction: discord.Interaction):
     try:
         message = chain.generate_message(random.randint(2, 12))
-        await interaction.response.send_message(message)
+        await interaction.response.send_message(message, view=GenerateView())
     except Exception as e:
         print("Failed to generate message:", e)
         await interaction.response.send_message("Произошла ошибка!", ephemeral=True)
