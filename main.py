@@ -3,6 +3,7 @@ import os
 import random
 import re
 import textwrap
+from pathlib import Path
 
 import discord
 from dotenv import load_dotenv
@@ -47,6 +48,20 @@ async def on_message(ctx: discord.Message):
     words = clean_content.split(" ")
     chain.process_words(words)
 
+    # Save image attachments
+
+    image_dir = Path("./images")
+    image_dir.mkdir(parents=True, exist_ok=True)
+
+    for a in ctx.attachments:
+        if (
+            a.content_type == "image/png"
+            or a.content_type == "image/jpeg"
+            or a.content_type == "image/webp"
+        ):
+            await a.save(image_dir / str(ctx.id))
+            print(f"🌅 New image from {ctx.author}")
+
     # Randomly generate and send a message
 
     if random.random() < float(os.environ["MESSAGE_CHANCE"]):
@@ -82,10 +97,8 @@ class GenerateView(discord.ui.View):
             img.save(image_binary, "PNG")
             image_binary.seek(0)
 
-            await interaction.response.send_message(
-                content="",
+            await interaction.followup.send(
                 file=discord.File(fp=image_binary, filename="fresco.png"),
-                view=self,
             )
 
 
@@ -118,14 +131,17 @@ async def stats(interaction: discord.Interaction):
     words = chain.get_words_count()
     links = chain.get_links_count()
 
+    images = len(os.listdir("./images"))
+
     embed = discord.Embed(
         title="Статистика",
-        description="Количество изученных слов и связей",
+        description="Количество изученных данных",
         color=discord.Color.orange(),
     )
 
     embed.add_field(name="📖 Слова", value=f"{words} слов")
     embed.add_field(name="🔗 Связи", value=f"{links} связей")
+    embed.add_field(name="🌅 Картинки", value=f"{images} картинок")
 
     await interaction.response.send_message(embed=embed)
 
