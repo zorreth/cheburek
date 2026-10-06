@@ -1,7 +1,8 @@
 import os
+import random
+import re
 
 import discord
-import regex
 from dotenv import load_dotenv
 
 from markov_chain import MarkovChain
@@ -9,29 +10,44 @@ from markov_chain import MarkovChain
 load_dotenv()
 
 chain = MarkovChain()
-
+chain.load()
 
 intents = discord.Intents.default()
 intents.message_content = True
 
-client = discord.Client(intents=intents)
+bot = discord.Bot(intents=intents)
 
 
-@client.event
+@bot.event
 async def on_ready():
-    print(f"🥟 Logged in as {client.user}!")
+    print(f"🥟 Logged in as {bot.user}!")
 
 
-@client.event
+@bot.event
 async def on_message(ctx: discord.Message):
     if ctx.author.bot:
         return
 
-    # Keep only letters, numbers, punctuation and spaces.
-    clean_content = regex.sub(r"[^\p{L}\p{N}\p{P}\s]+", "", ctx.content)
+    clean_content = re.sub(
+        r"^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$",
+        "",
+        ctx.content,
+    )
+    clean_content = re.sub(r"<@!?\d+>", "", clean_content)
+    clean_content = re.sub(r"\s+", " ", clean_content).strip()
 
     words = clean_content.split(" ")
     chain.process_words(words)
 
 
-client.run(os.environ["TOKEN"])
+@bot.command(description="Сгенерировать сообщение")
+async def generate(interaction: discord.Interaction):
+    try:
+        message = chain.generate_message(random.randint(2, 8))
+        await interaction.response.send_message(message)
+    except Exception as e:
+        print("Failed to generate message:", e)
+        await interaction.response.send_message("Произошла ошибка!", ephemeral=True)
+
+
+bot.run(os.environ["TOKEN"])
