@@ -50,4 +50,21 @@ async def generate(interaction: discord.Interaction):
         await interaction.response.send_message("Произошла ошибка!", ephemeral=True)
 
 
+@bot.command(description="Показать статистику")
+async def stats(interaction: discord.Interaction):
+    words = chain.get_words_count()
+    links = chain.get_links_count()
+
+    embed = discord.Embed(
+        title="Статистика",
+        description="Количество изученных слов и связей",
+        color=discord.Color.orange(),
+    )
+
+    embed.add_field(name="📖 Слова", value=f"{words} слов")
+    embed.add_field(name="🔗 Связи", value=f"{links} связей")
+
+    await interaction.response.send_message(embed=embed)
+
+
 bot.run(os.environ["TOKEN"])

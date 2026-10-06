@@ -67,6 +67,14 @@ class MarkovChain:
 
         return " ".join(message)
 
+    def get_words_count(self) -> int:
+        words = list(self.chain.keys())
+        words.remove("__START__")
+        return len(words)
+
+    def get_links_count(self) -> int:
+        return sum(len(inner) for inner in self.chain.values())
+
     def save(self):
         with open("data.json", "w", encoding="utf8") as f:
             json.dump(self.chain, f, indent=2, ensure_ascii=False)
