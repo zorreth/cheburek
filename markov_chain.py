@@ -13,12 +13,15 @@ class MarkovChain:
         if not words:
             return
 
+        new_words = 0
+
         for i, word in enumerate(words):
             if not word.strip() or word == "__START__" or word == "__END__":
                 continue
 
             if not word in self.chain:
                 self.chain[word] = {}
+                new_words += 1
 
             if i == 0:
                 self.chain["__START__"][word] = self.chain["__START__"].get(word, 0) + 1
@@ -28,6 +31,9 @@ class MarkovChain:
                 self.chain[word][next_word] = self.chain[word].get(next_word, 0) + 1
             else:
                 self.chain[word]["__END__"] = self.chain[word].get("__END__", 0) + 1
+
+        if new_words > 0:
+            print(f"📖 New words: {new_words} ({self.get_words_count()} total)")
 
         self.save()
 
