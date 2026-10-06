@@ -28,6 +28,8 @@ async def on_message(ctx: discord.Message):
     if ctx.author.bot:
         return
 
+    # Clean up and process the words
+
     clean_content = re.sub(
         r"^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$",
         "",
@@ -39,11 +41,21 @@ async def on_message(ctx: discord.Message):
     words = clean_content.split(" ")
     chain.process_words(words)
 
+    # Randomly generate and send a message
+
+    if random.random() < float(os.environ["MESSAGE_CHANCE"]):
+        message = chain.generate_message(random.randint(2, 12))
+
+        try:
+            await ctx.channel.send(message)
+        except Exception as e:
+            print("Failed to send message:", e)
+
 
 @bot.command(description="Сгенерировать сообщение")
 async def generate(interaction: discord.Interaction):
     try:
-        message = chain.generate_message(random.randint(2, 8))
+        message = chain.generate_message(random.randint(2, 12))
         await interaction.response.send_message(message)
     except Exception as e:
         print("Failed to generate message:", e)
