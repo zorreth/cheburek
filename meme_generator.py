@@ -13,8 +13,21 @@ class MemeGenerator:
         lines = textwrap.wrap(message, width=30)
         text = "\n".join(lines)
 
+        x = 165
+        bottom_y = 190
+
+        bbox = draw.multiline_textbbox(
+            (0, 0),
+            text,
+            font=font,
+            spacing=4,
+            align="center",
+        )
+
+        text_height = bbox[3] - bbox[1]
+
         draw.multiline_text(
-            (165, 140),
+            (x, bottom_y - text_height),
             text,
             fill="black",
             font=font,
