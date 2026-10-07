@@ -62,15 +62,33 @@ async def on_message(ctx: discord.Message):
             await a.save(image_dir / str(ctx.id))
             print(f"🌅 New image from {ctx.author}")
 
-    # Randomly generate and send a message
+    # Reply when someone mentioned/replied to bot
 
-    if random.random() < float(os.environ["MESSAGE_CHANCE"]):
+    mentioned = bot.user in ctx.mentions
+
+    replied = (
+        ctx.reference != None
+        and isinstance(ctx.reference.resolved, discord.Message)
+        and ctx.reference.resolved.author == bot.user
+    )
+
+    if mentioned or replied:
         message = chain.generate_message(random.randint(2, 12))
 
         try:
-            await ctx.channel.send(message)
+            await ctx.reply(message)
         except Exception as e:
-            print("Failed to send message:", e)
+            print("Failed to reply a message:", e)
+    else:
+        # Try a chance to generate and send a message
+
+        if random.random() < float(os.environ["MESSAGE_CHANCE"]):
+            message = chain.generate_message(random.randint(2, 12))
+
+            try:
+                await ctx.channel.send(message)
+            except Exception as e:
+                print("Failed to send message:", e)
 
 
 class GenerateView(discord.ui.View):
