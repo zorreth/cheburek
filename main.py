@@ -1,3 +1,4 @@
+import asyncio
 import io
 import os
 import random
@@ -27,7 +28,21 @@ bot = discord.Bot(intents=intents)
 
 @bot.event
 async def on_ready():
+    bot.loop.create_task(update_status())
+
     print(f"🥟 Logged in as {bot.user}!")
+
+
+async def update_status():
+    while True:
+        words = chain.get_words_count()
+
+        activity = discord.Activity(
+            type=discord.ActivityType.watching, name=f"{words} слов"
+        )
+
+        await bot.change_presence(activity=activity)
+        await asyncio.sleep(180)  # 3 minutes
 
 
 @bot.event
