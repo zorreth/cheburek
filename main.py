@@ -74,6 +74,9 @@ async def on_message(ctx: discord.Message):
 
 
 class GenerateView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=300)
+
     @discord.ui.button(label="🔁 Перегенерировать", style=discord.ButtonStyle.primary)
     async def regenerate(
         self, button: discord.ui.Button, interaction: discord.Interaction
@@ -82,7 +85,9 @@ class GenerateView(discord.ui.View):
 
         message = chain.generate_message(random.randint(2, 12))
 
-        await interaction.edit(content=message, attachments=[], view=self)
+        await interaction.edit_original_response(
+            content=message, attachments=[], view=self
+        )
 
     @discord.ui.button(label="👴 Жак Фреско", style=discord.ButtonStyle.secondary)
     async def fresco(self, button: discord.ui.Button, interaction: discord.Interaction):
@@ -91,7 +96,7 @@ class GenerateView(discord.ui.View):
         if not interaction.message:
             return
 
-        img = meme.generate_fresco(interaction.message.content)
+        img = meme.create_fresco(interaction.message.content)
 
         with io.BytesIO() as image_binary:
             img.save(image_binary, "PNG")
@@ -112,17 +117,19 @@ async def generate(interaction: discord.Interaction):
         await interaction.response.send_message("Произошла ошибка!", ephemeral=True)
 
 
-@bot.command(description="Сгенерировать мем Жак Фреско")
-async def fresco(interaction: discord.Interaction):
+@bot.command(description="Сгенерировать демотиватор")
+async def demotivator(interaction: discord.Interaction):
     message = chain.generate_message(random.randint(2, 8))
-    img = meme.generate_fresco(message)
+    image = "./images/" + random.choice(os.listdir("./images"))
+
+    img = meme.create_demotivator(message, image)
 
     with io.BytesIO() as image_binary:
         img.save(image_binary, "PNG")
         image_binary.seek(0)
 
         await interaction.response.send_message(
-            file=discord.File(fp=image_binary, filename="fresco.png")
+            file=discord.File(fp=image_binary, filename="demotivator.png")
         )
 
 
